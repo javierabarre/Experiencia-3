@@ -1,10 +1,11 @@
-/ *
-   ################
-   # Lab15125 #
+
+  /* ################
+   #   Lab15125   #
    ################
  
    Este codigo tiene como objetivo dar muestra de un uso practico de:
-   Sensor de ping ultrasónico (paralaje)
+   Sensor ultrasonico ping (parallax)
+
    Según la hoja de datos de Parallax para el PING))), 
    hay 73,746 microsegundos por pulgada o 29,034 microsegundos por centimetro 
    (es decir, el sonido viaja a 1130 pies (o 34442.4cm) por segundo). 
@@ -12,87 +13,88 @@
    por lo que dividimos por 2 para obtener la distancia del obstáculo.
    ver: 
    https://www.parallax.com/sites/default/files/downloads/28015-PING-Sensor-Product-Guide-v2.0.pdf
-        [En el PDF: TO_IN = 73_746 'Pulgadas; TO_CM = 29_034 'Centímetros]
+        [En el PDF: TO_IN = 73_746' Inches ; TO_CM = 29_034' Centimeters ]
+
    El circuito:
-     * + V conectado a sensor PING))) en + 5V
-     * GND conectado a sensor PING))) en GND (tierra)
+     * +V conectado a sensor PING))) en +5V
+     * GND conectado a sensor PING))) en GND (ground)
      * SIG conectado a sensor PING))) en pin digital 7
      * LED conectado a pin 9 (PWM)
+
    Funcion
-   readUltrasonicDistance (int triggerPin, int echoPin): Referencia obtenida de sensor ultrasónico tinkercad.com
-* /
+   readUltrasonicDistance(int triggerPin, int echoPin): Referencia obtenida de sensor ultrasonico tinkercad.com
+*/
+int inches = 0;// variables en pulgadas
+int cm = 0; // variables en cm
 
+/*Inicio declaracion funcion readUltrasonicDistance de tipo long para aumentar precisión*/
 
-/ *
-Inicio declaracion funcion readUltrasonicDistance
-* /
-long  readUltrasonicDistance ( int triggerPin, int echoPin)
+long readUltrasonicDistance(int triggerPin, int echoPin)
 {
-  pinMode (triggerPin, OUTPUT);  // Inicializar LOW para limpiar trigger por 2 microsegundos
-  digitalWrite (triggerPin, LOW);
-  delayMicroseconds ( 2 );
-  // Inicializar trigger en HIGH por 8 microsegundos para comenzar
-  digitalWrite (triggerPin, HIGH);
-  delayMicroseconds ( 8 );
-  digitalWrite (triggerPin, LOW);
-  pinMode (echoPin, INPUT);
+ 
+  /* se apaga trig por 2 milisegundos */
+  pinMode(triggerPin, OUTPUT);  // entrada trig
+  digitalWrite(triggerPin, LOW);
+  delayMicroseconds(2);
+  
+  /*se enciende trig por 10 milisegundos*/
+  digitalWrite(triggerPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(triggerPin, LOW);//se apaga trig
+  pinMode(echoPin, INPUT);//salida eco
   // lectura de pin echo con el retorno de la señal
-  return  pulseIn (echoPin, HIGH);
+  return pulseIn(echoPin, HIGH);//función retorna valor distancia
 }
-/ *
-Fin declaracion funcion readUltrasonicDistance
-* /
 
-
-/ *
-Configuración de la función de inicio
-* /
- configuración vacía ()
+void setup()
 {
-  pinMode ( 8 , SALIDA);
-  pinMode ( 5 , SALIDA);
-  pinMode ( 2 , SALIDA);
+  Serial.begin(9600);// comunicación serial
+  pinMode(8, OUTPUT);// salida de led verde
+  pinMode(7, OUTPUT); //salida led amarillo
+  pinMode(4, OUTPUT); //salida led rojo
 }
-/ *
-Configuración de la función Fin
-* /
 
-
-/ *
-Inicio funcion loop
-* /
- bucle vacío ()
+void loop()  
 {
-  int distancia = 0.01723 * readUltrasonicDistance ( 2 , 2 );
-
-  if ((distancia <= 333 ) && (distancia> = 200 )) {
-    escritura digital ( 8 , ALTA);
-  } 
-  else {
-    digitalWrite ( 8 , BAJO);
-  }
-  if ((distancia < 200 ) && (distancia> = 100 )) {
-    escritura digital ( 7 , ALTA);
-  } 
-  else {
-    digitalWrite ( 7 , BAJO);
-  }
-  si (distancia < 100 ) {
-    escritura digital ( 4 , ALTA);
-  } 
-  else {
-    digitalWrite ( 4 , BAJO);
-  }
    
-
-  retraso ( 10 ); // Retrasa un poco para mejorar el rendimiento de la simulación
+  float distancia = 0.01723 * readUltrasonicDistance(2, 2);
+ 
+  /*rango operacional del telémetro 3 cm a 336 cm */
+  /*correción 1 : ondición que fuera del rango operacional se apagan los 3 leds*/
+  if(distancia > 336) 
+   
+   {
+  digitalWrite(7, LOW);
+  digitalWrite(8, LOW);
+  digitalWrite(4, LOW);    
+  } 
+ 
+/*correcion 2: se intercambia los LED mas cerca verde mas lejo rojo*/
+ if((distancia < 336) && (distancia >= 200)) {
+ 
+  digitalWrite(4, HIGH);//enciende led rojo
+  digitalWrite(7, LOW);
+  digitalWrite(8, LOW);
+  } 
+  else {
+    digitalWrite(4, LOW); 
+  }
+  if((distancia < 200) && (distancia >= 100)) {
+    digitalWrite(7, HIGH);//enciende led amarillo
+  } 
+  else {
+    digitalWrite(7, LOW); 
+  }
+  if(distancia < 100) {
+    digitalWrite(8, HIGH);//enciende led verde 
+  } 
+  else {
+    digitalWrite(8, LOW); 
+  }
+                                      
+  /*muestra en monitor serial */                                    
+  Serial.print("distancia: ");
+  Serial.println(distancia+1.8);//correción 2 se calibra para ver lo mismo en monitor serial y en simulaión 
+ 
+  delay(10); // Delay a little bit to improve simulation performance
 }
-/ *
-Inicio funcion loop
-* /
-
-/ *
- #######################
- # Fin de programa #
- #######################
-* /
